@@ -1,11 +1,6 @@
 
 # edr
 
-<!-- badges: start -->
-
-[![R-CMD-check](https://github.com/NicChr/edr/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/NicChr/edr/actions/workflows/R-CMD-check.yaml)
-<!-- badges: end -->
-
 ## Estimated Dissemination Ratio
 
 This package is a fast implementation of the Estimated Dissemination
@@ -19,7 +14,7 @@ Diseases](https://dx.doi.org/10.3389/fpubh.2021.675065)
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("NicChr/edr")
+devtools::install_github("Nic-Chr/edr")
 ```
 
 ### Libraries
@@ -65,9 +60,6 @@ temp
 #> 434:   434  4069 0.8977741
 #> 435:   435  4115 0.8625097
 #> 436:   436  4565 0.8194020
-```
-
-``` r
 class(temp)
 #> [1] "edr"        "data.table" "data.frame"
 ```
@@ -91,9 +83,6 @@ temp[, edr2 := edr_only(cases, 7)][]
 #> 434:   434  4069 0.8977741 0.8977741
 #> 435:   435  4115 0.8625097 0.8625097
 #> 436:   436  4565 0.8194020 0.8194020
-```
-
-``` r
 
 rm(temp) # Remove temp
 ```
@@ -121,11 +110,11 @@ edr_seven_day[, ma7 := frollmean(cases, n = 7, align = "right")][]
 #>   4: 2020-01-25     0        NA        NA        NA       NA
 #>   5: 2020-01-26     0        NA        NA        NA       NA
 #>  ---                                                        
-#> 432: 2021-03-28  3947 0.9566844 0.9384146 0.9744761 5259.714
-#> 433: 2021-03-29  4784 0.9337753 0.9162038 0.9516115 5170.714
-#> 434: 2021-03-30  4069 0.8977741 0.8814257 0.9143629 4978.286
-#> 435: 2021-03-31  4115 0.8625097 0.8465404 0.8796212 4762.286
-#> 436: 2021-04-01  4565 0.8194020 0.8031209 0.8358233 4517.714
+#> 432: 2021-03-28  3947 0.9566844 0.9391414 0.9748462 5259.714
+#> 433: 2021-03-29  4784 0.9337753 0.9160964 0.9520861 5170.714
+#> 434: 2021-03-30  4069 0.8977741 0.8809571 0.9148630 4978.286
+#> 435: 2021-03-31  4115 0.8625097 0.8462403 0.8792721 4762.286
+#> 436: 2021-04-01  4565 0.8194020 0.8033532 0.8356559 4517.714
 ```
 
 Finally plotting everything

@@ -1,0 +1,132 @@
+---
+output: github_document
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# edr
+
+<!-- badges: start -->
+[![R-CMD-check](https://github.com/NicChr/edr/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/NicChr/edr/actions/workflows/R-CMD-check.yaml)
+<!-- badges: end -->
+
+## Estimated Dissemination Ratio
+
+
+This package is a fast implementation of the Estimated Dissemination Ratio, 
+described here
+
+[Estimated Dissemination Ratio—A Practical Alternative to the Reproduction Number for Infectious Diseases](https://dx.doi.org/10.3389/fpubh.2021.675065)
+
+## Installation
+
+``` {r,eval=FALSE}
+# install.packages("devtools")
+devtools::install_github("NicChr/edr")
+```
+
+### Libraries
+
+``` {r}
+library(edr)
+library(data.table)
+library(ggplot2)
+```
+
+### Recreating Figure 1
+
+To recreate figure 1 from the paper, we use data from the John Hopkins COVID-19 data repository.    
+Source: [CSSEGISandData/COVID-19](https://github.com/CSSEGISandData/COVID-19)
+
+### Data
+
+``` {r}
+data(uk_covid_cases)
+setDT(uk_covid_cases)
+```
+
+### Some technical notes
+
+`edr()` returns a `data.table` with class 'edr'
+
+```{r,error=TRUE}
+temp <- edr(uk_covid_cases$new, 7)
+temp
+class(temp)
+```
+
+If you want just the edr estimates as a regular vector you can use `edr_only()`
+
+```{r}
+temp[, edr2 := edr_only(cases, 7)][]
+
+rm(temp) # Remove temp
+```
+
+
+### EDR calculation 
+
+Here we calculate the 7-day EDR with `edr()` 
+along with 99% percentile confidence intervals
+
+``` {r}
+edr_seven_day <- uk_covid_cases[, edr(new, window = 7, order_by = reporting_date,
+                                     simulations = 1e04, alpha = 0.01)]
+```
+
+We also calculate the 7-day rolling average of new confirmed cases
+
+``` {r}
+edr_seven_day[, ma7 := frollmean(cases, n = 7, align = "right")][]
+```
+
+Finally plotting everything
+
+``` {r}
+edr_seven_day <- edr_seven_day[
+  time >= as.Date("2020-03-10") & 
+    time < as.Date("2020-05-01")]
+
+scale_factor <- 500
+uk_lockdown <- as.Date("2020-03-24")
+```
+
+There is a convenient plot method for edr objects defined in `plot.edr()`.
+
+``` {r}
+edr_plot <- plot(edr_seven_day, include_cases = FALSE)
+edr_plot
+```
+
+We just need to add a few things to recreate the figure
+
+```{r}
+edr_plot +
+  geom_col(aes(y = ma7 / scale_factor), width = 1, alpha = 0.4, fill = "#0077B6") +
+  geom_segment(aes(x = uk_lockdown, y = 6, xend = uk_lockdown, yend = 3.25),
+               arrow = arrow(length = unit(0.5, "cm"))) +
+  annotate("text", x = uk_lockdown, y = 6, 
+           label = "full UK lockdown \nimplemented",
+           vjust = -0.1,
+           fontface = "bold") +
+  labs(x = "Reporting Date", y = "UK EDR") +
+  scale_y_continuous(breaks = seq(0, 10, 1),
+                     sec.axis = sec_axis(\(x) x * scale_factor,
+                                         breaks = seq(0, 5000, 500),
+                                         name = "UK new case 7-day rolling average")) +
+  theme_bw() + 
+  theme(axis.line.y.right = element_line(color = "#0077B6"), 
+        axis.ticks.y.right = element_line(color = "#0077B6"),
+        axis.text.y.right = element_text(color = "#0077B6"), 
+        axis.title.y.right = element_text(color = "#0077B6")
+  )
+```
+
+
